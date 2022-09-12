@@ -36,4 +36,5 @@ plot_progression(projectPath,doc = doc)
 plot_NASC(doc=doc,projectPath = projectPath)
 
 #Save word document
+
 print(doc, target=reportPath)
