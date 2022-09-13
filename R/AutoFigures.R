@@ -112,9 +112,9 @@ plot_progression <- function(projectPath,doc){
     data <- baseline[names(baseline)%in% bp]
 
     #Display map
-    gg_plot<-ggplot2::ggplot(data=stratum,aes(x=x,y=y,group=StratumName))+
+    gg_plot<-ggplot2::ggplot(data=stratum,ggplot2::aes(x=x,y=y,group=StratumName))+
       ggplot2::geom_polygon(colour='black',fill='red',alpha=0.4)+
-      ggplot2::geom_point(data=data[[1]]$Log,aes(x=Longitude,y=Latitude,colour=DateTime,group=NULL),size=0.1)+
+      ggplot2::geom_point(data=data[[1]]$Log,ggplot2::aes(x=Longitude,y=Latitude,colour=DateTime,group=NULL),size=0.1)+
       ggplot2::xlab('Longitude')+ggplot2::ylab('Latitude')+ ggplot2::theme(panel.background = element_blank())+
       ggplot2::theme(legend.position = "bottom",
             legend.key.width=unit(0.1,"npc"))
@@ -156,10 +156,10 @@ plot_NASC <- function(projectPath,doc=NULL){
     data <- data[!is.na(data$PSU),]
 
     #Display map
-    gg_plot<-ggplot2::ggplot(data=stratum,aes(x=x,y=y,group=StratumName))+
+    gg_plot<-ggplot2::ggplot(data=stratum,ggplot2::aes(x=x,y=y,group=StratumName))+
       ggplot2::geom_polygon(colour='black',fill='red',alpha=0.4)+
-      ggplot2::geom_point(data=data,aes(x=Longitude,y=Latitude,group=NULL,size=NASC,colour=NASC),alpha=0.1)+
-      ggplot2::geom_point(data=data,aes(x=Longitude,y=Latitude,group=NULL),size=0.1)+
+      ggplot2::geom_point(data=data,ggplot2::aes(x=Longitude,y=Latitude,group=NULL,size=NASC,colour=NASC),alpha=0.1)+
+      ggplot2::geom_point(data=data,ggplot2::aes(x=Longitude,y=Latitude,group=NULL),size=0.1)+
       viridis::scale_color_viridis(option = "plasma")+ ggplot2::theme(panel.background = element_blank())+
       ggplot2::xlab('Longitude')+ggplot2::ylab('Latitude')
 
