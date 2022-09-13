@@ -209,8 +209,10 @@ plot_Imputed_link <- function(projectPath,doc=NULL){
       sub_data$Latitude2 <- NaN
       sub_data$Longitude2 <- NaN
       for(rpi in sub_data$ReplaceIndividual){
-        sub_data[sub_data$ReplaceIndividual==rpi,]$Latitude2<-unique(data[[1]][data[[1]]$Individual==rpi,]$Latitude)
-        sub_data[sub_data$ReplaceIndividual==rpi,]$Longitude2<-unique(data[[1]][data[[1]]$Individual==rpi,]$Longitude)
+        lat2 <-(unique(data[[1]][data[[1]]$Individual==rpi,]$Latitude))
+        lon2<-(unique(data[[1]][data[[1]]$Individual==rpi,]$Longitude))
+        sub_data[sub_data$ReplaceIndividual==rpi,]$Latitude2<-lat2[!is.na(lat2)]
+        sub_data[sub_data$ReplaceIndividual==rpi,]$Longitude2<-lon2[!is.na(lon2)]
       }
       
       #Display map
@@ -225,13 +227,15 @@ plot_Imputed_link <- function(projectPath,doc=NULL){
       
       show(gg_plot)
       
+      if(!is.null(doc)){
+        add.title(doc=doc,my.title = paste0('AutoReport - NASC map - ', bp))
+        officer::body_add_gg(doc, value = gg_plot, style = "centered" )
+        add.page.break(doc = doc)}else{show(gg_plot)}
+      
+      
+      
     }
   }
-  
-  if(!is.null(doc)){
-    add.title(doc=doc,my.title = paste0('AutoReport - NASC map - ', bp))
-    officer::body_add_gg(doc, value = gg_plot, style = "centered" )
-    add.page.break(doc = doc)}else{show(gg_plot)}
   
   
   return(doc)
