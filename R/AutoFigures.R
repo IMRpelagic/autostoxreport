@@ -30,7 +30,7 @@ add.page.break=function(doc){
 #' @export
 add.title=function(doc, my.title){
   my.prop=officer::fp_text(font.size = 8.5, bold = TRUE, font.family = "Palantino Linotype")
-  the.title=officer::fpar(ftext(my.title, prop=my.prop))
+  the.title=officer::fpar(officer::ftext(my.title, prop=my.prop))
   officer::body_add_fpar(doc, the.title)
   officer::body_add_par(doc, " ")
   return("title added")
