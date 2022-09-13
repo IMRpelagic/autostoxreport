@@ -174,10 +174,9 @@ return(doc)
 
 
 
-#' plot_NASC
+#' plot_Imputed_link
 #'
-#' This function reads the stox project and grap the MeanNASCdata object
-#' A figure is then made to view the mean NASC values
+#' This figure show the linkege where the impute has revieced samples from 
 #'
 #' @param projectPath Path to the stox project
 #' @param doc a doc object to store figures to word document
@@ -224,19 +223,12 @@ plot_Imputed_link <- function(projectPath,doc=NULL){
         ggplot2::geom_segment(data=sub_data,ggplot2::aes(xend=Longitude,yend=Latitude,
                                                 x = Longitude2,y=Latitude2,group=NULL,colour=ReplaceLevel),
                               arrow=ggplot2::arrow(length=ggplot2::unit(0.5,'cm')))
-      
       show(gg_plot)
-      
       if(!is.null(doc)){
-        add.title(doc=doc,my.title = paste0('AutoReport - NASC map - ', bp))
+        add.title(doc=doc,my.title = paste0('AutoReport - Impute Linkage - ', bp))
         officer::body_add_gg(doc, value = gg_plot, style = "centered" )
         add.page.break(doc = doc)}else{show(gg_plot)}
-      
-      
-      
     }
   }
-  
-  
   return(doc)
 }
