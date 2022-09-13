@@ -117,7 +117,7 @@ plot_progression <- function(projectPath,doc){
       ggplot2::geom_point(data=data[[1]]$Log,ggplot2::aes(x=Longitude,y=Latitude,colour=DateTime,group=NULL),size=0.1)+
       ggplot2::xlab('Longitude')+ggplot2::ylab('Latitude')+ ggplot2::theme(panel.background = ggplot2::element_blank())+
       ggplot2::theme(legend.position = "bottom",
-            legend.key.width=unit(0.1,"npc"))
+            legend.key.width=ggplot2::unit(0.1,"npc"))
 
     add.title(doc=doc,my.title = paste0('AutoReport - progress map - ', bp))
     officer::body_add_gg(doc, value = gg_plot, style = "centered" )
