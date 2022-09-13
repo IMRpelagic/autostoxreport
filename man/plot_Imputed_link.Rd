@@ -2,7 +2,7 @@
 % Please edit documentation in R/AutoFigures.R
 \name{plot_Imputed_link}
 \alias{plot_Imputed_link}
-\title{plot_NASC}
+\title{plot_Imputed_link}
 \usage{
 plot_Imputed_link(projectPath, doc = NULL)
 }
@@ -15,6 +15,5 @@ plot_Imputed_link(projectPath, doc = NULL)
 A ggplot figure
 }
 \description{
-This function reads the stox project and grap the MeanNASCdata object
-A figure is then made to view the mean NASC values
+This figure show the linkege where the impute has revieced samples from
 }
