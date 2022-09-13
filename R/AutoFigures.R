@@ -171,3 +171,68 @@ plot_NASC <- function(projectPath,doc=NULL){
   }
 return(doc)
 }
+
+
+
+#' plot_NASC
+#'
+#' This function reads the stox project and grap the MeanNASCdata object
+#' A figure is then made to view the mean NASC values
+#'
+#' @param projectPath Path to the stox project
+#' @param doc a doc object to store figures to word document
+#' @return A ggplot figure
+#' @export
+plot_Imputed_link <- function(projectPath,doc=NULL){
+  
+  #Get data and processes from baseline
+  baseline <- RstoxFramework::getModelData(projectPath, modelName = 'baseline')
+  baseline_processes<- RstoxFramework::getProcessTable(projectPath,modelName = 'baseline')
+  
+  
+  #Path to where the stratum polygon is
+  geojsonFilePath<-paste0(projectPath,'/output/baseline/',baseline_processes[baseline_processes$functionOutputDataType=='StratumPolygon',]$processName,'/',
+                          baseline_processes[baseline_processes$functionOutputDataType=='StratumPolygon',]$functionOutputDataType,'.geojson')
+  
+  #get stratum polygon
+  stratum <- getStratumPolygonFromGeojsonfFile(geojsonFilePath)
+  
+  for(bp in baseline_processes[baseline_processes$functionOutputDataType=='SuperIndividualsData',]$processName){
+    print(bp)
+    
+    data <- baseline[names(baseline)%in% bp]
+    
+    if('ReplaceLevel'%in%names(data[[1]])){
+      sub_data <- data[[1]]
+      sub_data<-sub_data[!is.na(sub_data$ReplaceIndividual),]
+      sub_data<-sub_data[sub_data$ReplaceLevel!='Haul',]
+      sub_data$Latitude2 <- NaN
+      sub_data$Longitude2 <- NaN
+      for(rpi in sub_data$ReplaceIndividual){
+        sub_data[sub_data$ReplaceIndividual==rpi,]$Latitude2<-unique(data[[1]][data[[1]]$Individual==rpi,]$Latitude)
+        sub_data[sub_data$ReplaceIndividual==rpi,]$Longitude2<-unique(data[[1]][data[[1]]$Individual==rpi,]$Longitude)
+      }
+      
+      #Display map
+      gg_plot<-ggplot2::ggplot(data=stratum,ggplot2::aes(x=x,y=y,group=StratumName))+
+        ggplot2::geom_polygon(colour='black',fill='grey',alpha=0.4)+
+        ggplot2::geom_point(data=data[[1]],ggplot2::aes(x=Longitude,y=Latitude,colour=ReplaceLevel,group=NULL),size=1)+
+        ggplot2::xlab('Longitude')+
+        ggplot2::ylab('Latitude')+
+        ggplot2::geom_segment(data=sub_data,ggplot2::aes(xend=Longitude,yend=Latitude,
+                                                x = Longitude2,y=Latitude2,group=NULL,colour=ReplaceLevel),
+                              arrow=ggplot2::arrow(length=ggplot2::unit(0.5,'cm')))
+      
+      show(gg_plot)
+      
+    }
+  }
+  
+  if(!is.null(doc)){
+    add.title(doc=doc,my.title = paste0('AutoReport - NASC map - ', bp))
+    officer::body_add_gg(doc, value = gg_plot, style = "centered" )
+    add.page.break(doc = doc)}else{show(gg_plot)}
+  
+  
+  return(doc)
+}
