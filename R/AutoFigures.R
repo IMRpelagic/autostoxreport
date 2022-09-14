@@ -243,6 +243,8 @@ plot_Imputed_link <- function(projectPath,doc=NULL){
 #' @return doc a doc object to store figures to word document
 #' @export
 plot_BootstrapDiag<- function(projectPath,doc){
+  
+  
   analysis <- RstoxFramework::getModelData(projectPath, modelName = 'analysis')
   analysis_processes<- RstoxFramework::getProcessTable(projectPath,modelName = 'analysis')
   
@@ -273,3 +275,66 @@ plot_BootstrapDiag<- function(projectPath,doc){
   
 }
 
+
+
+#' plot_Baseline_processes
+#'
+#' This function show the how the processes are connected
+#'
+#' @param projectPath Path to the stox project
+#' @param doc a doc object to store figures to word document
+#' @return doc a doc object to store figures to word document
+#' @export
+plot_Baseline_processes<- function(projectPath,doc){
+  
+  tt <- RstoxFramework::getProcessTable(projectPath,modelName = 'baseline')
+  
+  from<-c()
+  to<-c()
+  for(i in 1:nrow(tt)){
+    for(aa in tt[i,]$functionInputs[[1]]){
+      print(aa)
+      if(length(aa)>0){
+        to<-c(to,tt[i,]$processName)
+        from<-c(from,aa)
+      }
+    }
+  }
+  
+  processes <- tt$processName
+  
+  nodes <-DiagrammeR::create_node_df(
+    n=length(processes),
+    nodes = processes,
+    label = FALSE,
+    type = "lower",
+    style = "filled",
+    color = "aqua",
+    shape = c("rectangle")
+  )
+  
+  
+  mydata <- data.frame(from=from,
+                       to=to)
+  mydata$from <- as.character(mydata$from)
+  mydata$to <- as.character(mydata$to)
+  nodesd = unique(c(mydata$from, mydata$to))
+  nodes <- DiagrammeR::create_node_df(  n=length(nodesd), label=nodesd, type=nodesd)
+  edges <- DiagrammeR::create_edge_df(from = factor(mydata$from, levels = nodesd),
+                                      to =  factor(mydata$to, levels = nodesd),
+                                      rel = "leading_to")
+  
+  graph <- DiagrammeR::create_graph(nodes_df = nodes, edges_df = edges)
+  
+  if(!is.null(doc)){
+    tmp_file <- 'tmpfile.png'
+    DiagrammeR::export_graph(graph,
+                             file_name = tmp_file,
+                             file_type = "png")
+    add.title(doc=doc,my.title = paste0('AutoReport - Process Map'))
+    officer::body_add_img(doc,src = tmp_file,width = 6,height = 6)
+    add.page.break(doc = doc)
+    file.remove(tmp_file)}else{DiagrammeR::render_graph(graph)}
+  
+  
+}
