@@ -293,7 +293,6 @@ plot_Baseline_processes<- function(projectPath,doc){
   to<-c()
   for(i in 1:nrow(tt)){
     for(aa in tt[i,]$functionInputs[[1]]){
-      print(aa)
       if(length(aa)>0){
         to<-c(to,tt[i,]$processName)
         from<-c(from,aa)
