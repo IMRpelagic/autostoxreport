@@ -2,6 +2,7 @@
 
 #' Creation of a doc object
 #' @export
+#' @import officer
 new.word.doc=function(){
   my.doc=officer::read_docx()
   return(my.doc)
@@ -14,6 +15,7 @@ new.word.doc=function(){
 #'
 #' @param out a doc object
 #' @export
+#' @import officer
 add.page.break=function(doc){
   officer::body_add_break(doc, pos="after")
   return("page break added")
@@ -28,6 +30,7 @@ add.page.break=function(doc){
 #'
 #' @param out a doc object
 #' @export
+#' @import officer
 add.title=function(doc, my.title){
   my.prop=officer::fp_text(font.size = 8.5, bold = TRUE, font.family = "Palantino Linotype")
   the.title=officer::fpar(officer::ftext(my.title, prop=my.prop))
@@ -43,6 +46,7 @@ add.title=function(doc, my.title){
 #'
 #' @param out a doc object
 #' @export
+#' @import officer
 add.image=function(doc, value, h=5, w=5){
   officer::body_add_img(doc, value,
                height=h, width=w,
@@ -92,6 +96,8 @@ getStratumPolygonFromGeojsonfFile <- function(geojsonFilePath, textFilePath = NU
 #' @param doc a doc object to store figures to word document
 #' @return doc a doc object to store figures to word document
 #' @export
+#' @import ggplot2
+#' @import officer
 plot_progression <- function(projectPath,doc){
   #Get data and processes from baseline
   baseline <- RstoxFramework::getModelData(projectPath, modelName = 'baseline')
@@ -136,6 +142,9 @@ plot_progression <- function(projectPath,doc){
 #' @param doc a doc object to store figures to word document
 #' @return A ggplot figure
 #' @export
+#' @import ggplot2
+#' @import plyr
+#' @import viridis
 plot_NASC <- function(projectPath,doc=NULL){
   #Get data and processes from baseline
   baseline <- RstoxFramework::getModelData(projectPath, modelName = 'baseline')
@@ -182,6 +191,9 @@ return(doc)
 #' @param doc a doc object to store figures to word document
 #' @return A ggplot figure
 #' @export
+#' @import ggplot2
+#' @import officer
+
 plot_Imputed_link <- function(projectPath,doc=NULL){
   
   #Get data and processes from baseline
@@ -242,6 +254,8 @@ plot_Imputed_link <- function(projectPath,doc=NULL){
 #' @param doc a doc object to store figures to word document
 #' @return doc a doc object to store figures to word document
 #' @export
+#' @import ggplot2
+#' @import officer
 plot_BootstrapDiag<- function(projectPath,doc){
   
   
@@ -285,6 +299,8 @@ plot_BootstrapDiag<- function(projectPath,doc){
 #' @param doc a doc object to store figures to word document
 #' @return doc a doc object to store figures to word document
 #' @export
+#' @import DiagrammeR
+#' @import officer
 plot_Baseline_processes<- function(projectPath,doc){
   
   tt <- RstoxFramework::getProcessTable(projectPath,modelName = 'baseline')

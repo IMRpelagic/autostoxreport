@@ -13,4 +13,6 @@ RoxygenNote: 7.2.1
 Imports: 
     DiagrammeR,
     ggplot2,
-    officer
+    officer,
+    plyr,
+    viridis
