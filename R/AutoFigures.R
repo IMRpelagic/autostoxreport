@@ -232,3 +232,44 @@ plot_Imputed_link <- function(projectPath,doc=NULL){
   }
   return(doc)
 }
+
+
+#' plot_BootstrapDiag
+#'
+#' This function plot the progression of vessels from a Stox project
+#'
+#' @param projectPath Path to the stox project
+#' @param doc a doc object to store figures to word document
+#' @return doc a doc object to store figures to word document
+#' @export
+plot_BootstrapDiag<- function(projectPath,doc){
+  analysis <- RstoxFramework::getModelData(projectPath, modelName = 'analysis')
+  analysis_processes<- RstoxFramework::getProcessTable(projectPath,modelName = 'analysis')
+  
+  data <- analysis$Bootstrap$ImputeSuperIndividuals
+  
+  test <- aggregate(Abundance ~ IndividualAge+BootstrapID,data,sum)
+  
+  Abundance_out <- c()
+  for(i in head(unique(test$BootstrapID),-1)){
+    Abundance <- c()
+    tt<- aggregate(Abundance ~ IndividualAge, test[test$BootstrapID%in%c(0:i+1),],mean)
+    Abundance$Abundance_mean <- tt$Abundance
+    Abundance$Abundance_age <- tt$IndividualAge
+    Abundance$Abundance_sd<-aggregate(Abundance ~ IndividualAge, test[test$BootstrapID%in%c(0:i+1),],sd)$Abundance
+    Abundance$BootstrapID <- i+1
+    Abundance_out <- rbind(Abundance_out, as.data.frame(Abundance))
+  }
+  
+  gg_plot<-ggplot2::ggplot(data=Abundance_out,ggplot2::aes(x=BootstrapID,y=Abundance_mean,
+                                                           ymin=Abundance_mean-Abundance_sd,ymax=Abundance_mean+Abundance_sd))+
+    ggplot2::geom_line()+ggplot2::geom_ribbon(alpha=0.4)+ggplot2::facet_wrap(Abundance_age~.,scales = "free_y")
+  
+  if(!is.null(doc)){
+    add.title(doc=doc,my.title = paste0('AutoReport - Impute Linkage - ', bp))
+    officer::body_add_gg(doc, value = gg_plot, style = "centered" )
+    add.page.break(doc = doc)}else{show(gg_plot)}
+  
+  
+}
+
