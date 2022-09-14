@@ -61,6 +61,12 @@ plot_Imputed_link(doc=doc,projectPath = projectPath)
 plot_BootstrapDiag(doc=doc,projectPath = projectPath)
 
 
+#Show how the processes in baseline are connected
+
+plot_Baseline_processes(projectPath = projectPath,doc=doc)
+
+
+
 
 #write figues to a word document
 
