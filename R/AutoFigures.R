@@ -266,7 +266,7 @@ plot_BootstrapDiag<- function(projectPath,doc){
     ggplot2::geom_line()+ggplot2::geom_ribbon(alpha=0.4)+ggplot2::facet_wrap(Abundance_age~.,scales = "free_y")
   
   if(!is.null(doc)){
-    add.title(doc=doc,my.title = paste0('AutoReport - Impute Linkage - ', bp))
+    add.title(doc=doc,my.title = paste0('AutoReport - Bootstrap diagnostic', 'ImputeSuperIndividual'))
     officer::body_add_gg(doc, value = gg_plot, style = "centered" )
     add.page.break(doc = doc)}else{show(gg_plot)}
   
