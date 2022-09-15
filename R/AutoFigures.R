@@ -353,3 +353,86 @@ plot_Baseline_processes<- function(projectPath,doc){
   
   
 }
+
+
+
+
+#' plot_Imputed_link
+#'
+#' This figure show the linkege where the impute has revieced samples from 
+#'
+#' @param projectPath Path to the stox project
+#' @param doc a doc object to store figures to word document
+#' @return A ggplot figure
+#' @export
+#' @import ggplot2
+#' @import officer
+plot_TSN_comparrison <- function(projectPath,doc=NULL){
+  #Get quick and dirty abundance
+  
+  #Get the baseline TSN
+  baseline <- RstoxFramework::getModelData(projectPath, modelName = 'baseline')
+  baseline_processes<- RstoxFramework::getProcessTable(projectPath,modelName = 'baseline')
+  
+  #Get last SuperIndividualData, this should correspond the imputed version if this has been used
+  bp<-tail(baseline_processes[baseline_processes$functionOutputDataType=='SuperIndividualsData',]$processName,-1)
+  data_baseline <- baseline[names(baseline)%in% bp][[1]]
+  
+  #store the result
+  out<-c()
+  out$mean<-c(sum(data_baseline$Abundance,na.rm = T))
+  out$sd <- c(NA)
+  out$run<-c('baseline')
+  
+  #Get the TSN from bootstrap, using the same process input as the one from baseline
+  analysis <- RstoxFramework::getModelData(projectPath, modelName = 'analysis')[[1]]
+  data_bootstrap <- analysis[names(analysis)%in%tail(baseline_processes[baseline_processes$functionOutputDataType=='SuperIndividualsData',]$processName,-1)][[1]]
+  
+  out$mean<-c(out$mean,
+              mean(aggregate(Abundance ~ BootstrapID, data_bootstrap,sum)$Abundance,na.rm=T))
+  out$sd <- c(out$sd,sd(aggregate(Abundance ~ BootstrapID, data_bootstrap,sum)$Abundance))
+  out$run<-c(out$run,'bootstrap')
+  
+  #Get the TSN from sum(sa)/sigma_bs, the quick and dirty method. 
+  data_acoustic <- baseline[names(baseline)%in%tail(baseline_processes[baseline_processes$functionOutputDataType=='StoxAcousticData',]$processName,1)]
+  data_biotic<-baseline[names(baseline)%in%tail(baseline_processes[baseline_processes$functionOutputDataType=='StoxBioticData',]$processName,1)][[1]]
+  
+  #Grab the TS equation
+  TS_function <-baseline[names(baseline)%in%tail(baseline_processes[baseline_processes$functionOutputDataType=='AcousticTargetStrength',]$processName,1)][[1]]$AcousticTargetStrengthTable
+  
+  #Do random sampling from the length distribution
+  tmp <- c()
+  for(ii in 1:1000){
+    length <- sample(data_biotic$Individual$IndividualTotalLength,size = 1)
+    TS = TS_function$LengthExponent*log10(length)+TS_function$TargetStrength0
+    sigma = 10**(TS/10)
+    tmp <- c(tmp,sum(data_acoustic[[1]]$NASC$NASC) /sigma)
+  }
+  
+  
+  out$mean<-c(out$mean,
+              mean(tmp,na.rm=T))
+  out$sd <- c(out$sd,sd(tmp))
+  out$run<-c(out$run,'sum(sa)/sigma_bs')
+  
+  
+  
+  #Get Stratum area to another version of TSN
+  bp<-baseline_processes[baseline_processes$functionOutputDataType=='StratumAreaData',]$processName
+  StratumArea <- sum(baseline[names(baseline)%in% bp][[1]]$Area)
+  
+  out$mean<-c(out$mean,
+              mean(tmp*StratumArea,na.rm=T))
+  out$sd <- c(out$sd,sd(tmp*StratumArea))
+  out$run<-c(out$run,'mean(sa)/sigma_bs*Area')
+  
+  gg_plot <-ggplot(as.data.frame(out),aes(x=run,y=mean,ymin=mean-sd,ymax=mean+sd))+geom_point()+geom_errorbar()
+  
+  
+  if(!is.null(doc)){
+    add.title(doc=doc,my.title = paste0('AutoReport - TSN comparrison', ''))
+    body_add_gg(doc, value = gg_plot, style = "centered" )
+    add.page.break(doc = doc)}else{show(gg_plot)}
+  
+}
+
