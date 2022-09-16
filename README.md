@@ -28,9 +28,16 @@ projectPath <- 'path'
 reportPath <- 'path
 
 
-#Startup, run this function if the stox project has not been runned. 
 
-startup(projectPath)
+#Run StoX to get data in memory
+
+#This is not needed if the project is already is open in the StoX software
+
+RstoxFramework::openProject(projectPath)
+
+RstoxFramework::runProject(projectPath,modelName = 'baseline',setUseProcessDataToTRUE = T)
+
+RstoxFramework::runProcesses(projectPath,modelName = 'analysis')
 
 
 
@@ -71,4 +78,11 @@ plot_Baseline_processes(projectPath = projectPath,doc=doc)
 #write figues to a word document
 
 print(doc, target=reportFile)
+
+
+
+#Close project
+
+RstoxFramework::closeProject(projectPath)
+
 
