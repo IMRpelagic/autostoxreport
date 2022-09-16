@@ -133,6 +133,59 @@ plot_progression <- function(projectPath,doc){
   return(doc)
 }
 
+
+
+
+#' plot_progression
+#'
+#' This function plot the progression of vessels from a Stox project
+#'
+#' @param projectPath Path to the stox project
+#' @param doc a doc object to store figures to word document
+#' @return doc a doc object to store figures to word document
+#' @export
+#' @import ggplot2
+#' @import plyr
+#' @import officer
+plot_BeamKey <- function(projectPath,doc){
+  #Get data and processes from baseline
+  baseline <- RstoxFramework::getModelData(projectPath, modelName = 'baseline')
+  baseline_processes<- RstoxFramework::getProcessTable(projectPath,modelName = 'baseline')
+  
+  #Path to where the stratum polygon is
+  geojsonFilePath<-paste0(projectPath,'/output/baseline/',baseline_processes[baseline_processes$functionOutputDataType=='StratumPolygon',]$processName,'/',
+                          baseline_processes[baseline_processes$functionOutputDataType=='StratumPolygon',]$functionOutputDataType,'.geojson')
+  
+  #get stratum polygon
+  stratum <- getStratumPolygonFromGeojsonfFile(geojsonFilePath)
+  
+  #Loop through all processes with the StoxAcousticData format as an output
+  for(bp in baseline_processes[baseline_processes$functionOutputDataType=='StoxAcousticData',]$processName){
+    print(bp)
+    
+    #Get acoustic data from current process
+    data <- baseline[names(baseline)%in% bp]
+    
+    tmp<-join(data[[1]]$Log,data[[1]]$Beam)
+    #Display map
+    gg_plot<-ggplot2::ggplot(data=stratum,ggplot2::aes(x=x,y=y,group=StratumName))+
+      ggplot2::geom_polygon(colour='black',fill='red',alpha=0.4)+
+      ggplot2::geom_point(data=tmp,ggplot2::aes(x=Longitude,y=Latitude,colour=BeamKey,group=NULL),size=0.1)+
+      ggplot2::xlab('Longitude')+ggplot2::ylab('Latitude')+ 
+      ggplot2::theme(panel.background = ggplot2::element_blank())+
+      ggplot2::theme(legend.position = "bottom",
+                     legend.key.width=ggplot2::unit(0.1,"npc"))
+    
+    add.title(doc=doc,my.title = paste0('AutoReport - progress map - ', bp))
+    officer::body_add_gg(doc, value = gg_plot, style = "centered" )
+    add.page.break(doc = doc)
+    
+  }
+  return(doc)
+}
+
+
+
 #' plot_NASC
 #'
 #' This function reads the stox project and grap the MeanNASCdata object
