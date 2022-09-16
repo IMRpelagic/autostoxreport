@@ -170,7 +170,7 @@ plot_BeamKey <- function(projectPath,doc){
     #Display map
     gg_plot<-ggplot2::ggplot(data=stratum,ggplot2::aes(x=x,y=y,group=StratumName))+
       ggplot2::geom_polygon(colour='black',fill='red',alpha=0.4)+
-      ggplot2::geom_point(data=tmp,ggplot2::aes(x=Longitude,y=Latitude,colour=BeamKey,group=NULL),size=0.1)+
+      ggplot2::geom_point(data=tmp,ggplot2::aes(x=Longitude,y=Latitude,colour=Beam,group=NULL),size=0.1)+
       ggplot2::xlab('Longitude')+ggplot2::ylab('Latitude')+ 
       ggplot2::theme(panel.background = ggplot2::element_blank())+
       ggplot2::theme(legend.position = "bottom",
