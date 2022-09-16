@@ -394,39 +394,49 @@ plot_TSN_comparrison <- function(projectPath,doc=NULL){
   out$run<-c(out$run,'bootstrap')
   
   #Get the TSN from sum(sa)/sigma_bs, the quick and dirty method. 
-  data_acoustic <- baseline[names(baseline)%in%tail(baseline_processes[baseline_processes$functionOutputDataType=='StoxAcousticData',]$processName,1)]
+  data_acoustic <- baseline[names(baseline)%in%tail(baseline_processes[baseline_processes$functionOutputDataType=='NASCData',]$processName,1)][[1]]
   data_biotic<-baseline[names(baseline)%in%tail(baseline_processes[baseline_processes$functionOutputDataType=='StoxBioticData',]$processName,1)][[1]]
   
   #Grab the TS equation
   TS_function <-baseline[names(baseline)%in%tail(baseline_processes[baseline_processes$functionOutputDataType=='AcousticTargetStrength',]$processName,1)][[1]]$AcousticTargetStrengthTable
-  
-  #Do random sampling from the length distribution
-  tmp <- c()
-  for(ii in 1:1000){
-    length <- sample(data_biotic$Individual$IndividualTotalLength,size = 1)
-    TS = TS_function$LengthExponent*log10(length)+TS_function$TargetStrength0
-    sigma = 10**(TS/10)
-    tmp <- c(tmp,sum(data_acoustic[[1]]$NASC$NASC) /sigma)
-  }
-  
-  
-  out$mean<-c(out$mean,
-              mean(tmp,na.rm=T))
-  out$sd <- c(out$sd,sd(tmp))
-  out$run<-c(out$run,'sum(sa)/sigma_bs')
-  
   
   
   #Get Stratum area to another version of TSN
   bp<-baseline_processes[baseline_processes$functionOutputDataType=='StratumAreaData',]$processName
   StratumArea <- sum(baseline[names(baseline)%in% bp][[1]]$Area)
   
-  out$mean<-c(out$mean,
-              mean(tmp*StratumArea,na.rm=T))
-  out$sd <- c(out$sd,sd(tmp*StratumArea))
-  out$run<-c(out$run,'mean(sa)/sigma_bs*Area')
   
-  gg_plot <-ggplot(as.data.frame(out),aes(x=run,y=mean,ymin=mean-sd,ymax=mean+sd))+geom_point()+geom_errorbar()
+  #Add 0 to all channels that has NAN, i.e. selected species not in channel
+  data_acoustic[is.na(data_acoustic$NASC),]$NASC<-0
+  
+  #Sum NASC vertically
+  NASC_per_edsu<-aggregate(data_acoustic$NASC,by=list(data_acoustic$EDSU),FUN=sum)
+  
+  #random sampling from the length distribution
+  rho <- c()
+  for(ii in 1:10000){
+    #random length assuming normal distribution
+    length <- rnorm(1,mean(data_biotic$Individual$IndividualTotalLength),
+                    sd(data_biotic$Individual$IndividualTotalLength))
+    #Target strength and sigma of fish
+    TS = TS_function$LengthExponent*log10(length)+TS_function$TargetStrength0
+    sigma = 10**(TS/10)
+    #density in number per square nautical miles
+    rho <- c(rho,mean(NASC_per_edsu$x)/(4*pi*sigma))
+  }
+  
+  out2<-out
+  out2$mean<-c(out$mean,
+              mean(rho*StratumArea,na.rm=T))
+  out2$sd <- c(out$sd,sd(rho*StratumArea))
+  out2$run<-c(out$run,'mean(sA)/(4*pi*sigma_bs)*Area')
+  
+  print('relative bootstrap in percentage')
+  print((out2$mean[3]/out2$mean[2])*100)
+  
+  # ggplot(as.data.frame(out2),aes(x=run,y=mean,ymin=mean-sd,ymax=mean+sd))+geom_point()+geom_errorbar()
+  #make a qqplot
+  gg_plot<-ggplot(as.data.frame(out2),aes(x=run,y=mean,ymin=mean-sd,ymax=mean+sd))+geom_point()+geom_errorbar()
   
   
   if(!is.null(doc)){
