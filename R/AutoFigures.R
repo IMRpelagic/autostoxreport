@@ -414,7 +414,7 @@ plot_TSN_comparrison <- function(projectPath,doc=NULL){
   
   #random sampling from the length distribution
   rho <- c()
-  for(ii in 1:10000){
+  for(ii in 1:1000){
     #random length assuming normal distribution
     length <- rnorm(1,mean(data_biotic$Individual$IndividualTotalLength),
                     sd(data_biotic$Individual$IndividualTotalLength))
