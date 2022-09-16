@@ -176,7 +176,7 @@ plot_BeamKey <- function(projectPath,doc){
       ggplot2::theme(legend.position = "bottom",
                      legend.key.width=ggplot2::unit(0.1,"npc"))
     
-    add.title(doc=doc,my.title = paste0('AutoReport - progress map - ', bp))
+    add.title(doc=doc,my.title = paste0('AutoReport - Beam key on map- ', bp))
     officer::body_add_gg(doc, value = gg_plot, style = "centered" )
     add.page.break(doc = doc)
     
