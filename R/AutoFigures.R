@@ -531,7 +531,7 @@ plot_AgeLength<- function(projectPath,doc){
   
   #Get last SuperIndividualData, this should correspond the imputed version if this has been used
   for(bp in baseline_processes[baseline_processes$functionOutputDataType=='StoxBioticData',]$processName){
-    
+    print(bp)
     data_baseline <- baseline[names(baseline)%in% bp][[1]]
     
     
@@ -546,7 +546,7 @@ plot_AgeLength<- function(projectPath,doc){
       xlab('Age')+ylab('Length')
     
     if(!is.null(doc)){
-      add.title(doc=doc,my.title = paste0('AutoReport - Age vs length - ', 'bp'))
+      add.title(doc=doc,my.title = paste0('AutoReport - Age vs length - ', bp))
       body_add_gg(doc, value = gg_plot, style = "centered" )
       add.page.break(doc = doc)}else{show(gg_plot)}
     
