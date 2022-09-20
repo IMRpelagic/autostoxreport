@@ -46,6 +46,11 @@ RstoxFramework::runProcesses(projectPath,modelName = 'analysis')
 doc=new.word.doc()
 
 
+#Add plot of age and length
+
+plot_AgeLength(projectPath,doc)
+  
+  
   
   #Add progression line
   

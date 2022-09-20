@@ -509,3 +509,48 @@ plot_TSN_comparrison <- function(projectPath,doc=NULL){
   
 }
 
+
+
+
+#' plot_AgeLength
+#'
+#' This function plot the age vs length information in biotic
+#'
+#' @param projectPath Path to the stox project
+#' @param doc a doc object to store figures to word document
+#' @return doc a doc object to store figures to word document
+#' @export
+#' @import ggplot2
+#' @import plyr
+#' @import officer
+plot_AgeLength<- function(projectPath,doc){
+  
+  #Get the baseline TSN
+  baseline <- RstoxFramework::getModelData(projectPath, modelName = 'baseline')
+  baseline_processes<- RstoxFramework::getProcessTable(projectPath,modelName = 'baseline')
+  
+  #Get last SuperIndividualData, this should correspond the imputed version if this has been used
+  for(bp in baseline_processes[baseline_processes$functionOutputDataType=='StoxBioticData',]$processName){
+    
+    data_baseline <- baseline[names(baseline)%in% bp][[1]]
+    
+    
+    tmp<-NULL
+    for(i in names(data_baseline)){
+      if(is.null(tmp))tmp<-as.data.frame(data_baseline[names(data_baseline)%in%i][[1]])
+      else tmp<-join(tmp,as.data.frame(data_baseline[names(data_baseline)%in%i][[1]]))
+    }
+    
+    gg_plot<-ggplot(data=tmp[!is.na(tmp$IndividualAge),],aes(y=IndividualTotalLength,x=jitter(IndividualAge),colour=Cruise))+
+      geom_point()+facet_wrap(SpeciesCategory~.,scales = "free")+
+      xlab('Age')+ylab('Length')
+    
+    if(!is.null(doc)){
+      add.title(doc=doc,my.title = paste0('AutoReport - Age vs length - ', 'bp'))
+      body_add_gg(doc, value = gg_plot, style = "centered" )
+      add.page.break(doc = doc)}else{show(gg_plot)}
+    
+  }
+  
+  
+}
