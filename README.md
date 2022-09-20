@@ -10,7 +10,7 @@ To install this packages:
 
 install.packages('devtools')
 
-devtools::install_github('https://github.com/IMRpelagic/autostoxreport.git')
+devtools::install_github('https://github.com/IMRpelagic/autostoxreport.git',force=T)
 
 
 ## Usage, in R
@@ -35,7 +35,7 @@ reportPath <- 'path
 
 RstoxFramework::openProject(projectPath)
 
-RstoxFramework::runProject(projectPath,modelName = 'baseline',setUseProcessDataToTRUE = T)
+RstoxFramework::runProject(projectPath,modelName = 'baseline')
 
 RstoxFramework::runProcesses(projectPath,modelName = 'analysis')
 
@@ -46,43 +46,43 @@ RstoxFramework::runProcesses(projectPath,modelName = 'analysis')
 doc=new.word.doc()
 
 
-#Add progression line to inspect the vessel track
-
-plot_progression(projectPath,doc = doc)
-
-
-#Add NASC plot that show meanNasc values of EDSU
-
-plot_NASC(doc=doc,projectPath = projectPath)
-
-
-
-#Add link of where the impute function has recieved information from. 
-
-plot_Imputed_link(doc=doc,projectPath = projectPath)
-
-
-
-#Diagnostic for Bootstrap to see if it has stabilized
-
-plot_BootstrapDiag(doc=doc,projectPath = projectPath)
-
-
-#Show how the processes in baseline are connected
-
-plot_Baseline_processes(projectPath = projectPath,doc=doc)
-
-
-
-
-#write figues to a word document
-
-print(doc, target=reportFile)
-
-
-
-#Close project
-
-RstoxFramework::closeProject(projectPath)
-
+  
+  #Add progression line
+  
+  plot_BeamKey(projectPath,doc=doc)
+  
+  
+  #Add NASC plot
+  
+  plot_NASC(doc=doc,projectPath = projectPath)
+  
+  
+  #Add link of where the impute function has recieved information
+  
+  plot_Imputed_link(doc=doc,projectPath = projectPath)
+  
+  
+  #Diagnostic for Bootstrap to see if it has stabilized
+  
+  plot_BootstrapDiag(doc=doc,projectPath = projectPath)
+  
+  
+  #Show how the processes in baseline are connected
+  
+  plot_Baseline_processes(projectPath = projectPath,doc=doc)
+  
+  
+  #Show a quick comparrison on the TSN
+  
+  plot_TSN_comparrison(projectPath=projectPath,doc = doc)
+  
+  
+  #Save word document
+  
+  print(doc, target=reportFile)
+  
+  
+  #Close project
+  
+  RstoxFramework::closeProject(projectPath)
 
