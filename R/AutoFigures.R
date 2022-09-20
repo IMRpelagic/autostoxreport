@@ -212,19 +212,29 @@ plot_NASC <- function(projectPath,doc=NULL){
   stratum <- getStratumPolygonFromGeojsonfFile(geojsonFilePath)
 
   #Loop through all NASC functions
-  for(bp in baseline_processes[baseline_processes$functionOutputDataType=='MeanNASCData',]$processName){
-    data <- baseline[names(baseline)%in% bp]
-    data <- plyr::join(data[[1]]$Data,data[[1]]$Resolution)
-    data <- data[!is.na(data$PSU),]
-
+  for(bp in baseline_processes[baseline_processes$functionOutputDataType=='NASCData',]$processName){
+    data <- baseline[names(baseline)%in% bp][[1]]
+    # data <- plyr::join(data[[1]]$Data,data[[1]]$Resolution)
+    # data <- data[!is.na(data$PSU),]
+    data <- aggregate(list(NASC=data$NASC),by=list(Longitude=data$Longitude,Latitude=data$Latitude,Cruise=data$Cruise),FUN=sum,na.rm=T)
+    
+    data$NASC_rel <- data$NASC/max(data$NASC,na.rm = T)
     #Display map
-    gg_plot<-ggplot2::ggplot(data=stratum,ggplot2::aes(x=x,y=y,group=StratumName))+
-      ggplot2::geom_polygon(colour='black',fill='red',alpha=0.4)+
-      ggplot2::geom_point(data=data,ggplot2::aes(x=Longitude,y=Latitude,group=NULL,size=NASC,colour=NASC),alpha=0.1)+
-      ggplot2::geom_point(data=data,ggplot2::aes(x=Longitude,y=Latitude,group=NULL),size=0.1)+
-      viridis::scale_color_viridis(option = "plasma")+ ggplot2::theme(panel.background = ggplot2::element_blank())+
-      ggplot2::xlab('Longitude')+ggplot2::ylab('Latitude')
+    world <- map_data('world')
+    gg_plot<-ggplot()+geom_map(data=world,map=world,
+                      aes(long, lat, map_id = region))+
+      xlim(min(data$Longitude)-1,max(data$Longitude)+1)+
+      ylim(min(data$Latitude)-1,max(data$Latitude)+1)+
+      geom_polygon(data=stratum,aes(x=x,y=y,group=StratumName,map_id=NULL),
+                   colour='black',fill='grey')+
+      geom_point(data=data,aes(x=Longitude,y=Latitude,group=NULL),colour='black',size=0.01)+
+      geom_spoke(data=data,aes(x=Longitude,y=Latitude,radius=NASC_rel*3,group=NULL),
+                 arrow = arrow(length = unit(0.0, "cm")), angle=pi/2,colour='blue')+ 
+      theme(panel.background = element_blank())+
+      xlab('Longitude')+ylab('Latitude')
+                      
 
+    
     if(!is.null(doc)){
       add.title(doc=doc,my.title = paste0('AutoReport - NASC map - ', bp))
       officer::body_add_gg(doc, value = gg_plot, style = "centered" )
