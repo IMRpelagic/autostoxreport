@@ -214,9 +214,16 @@ plot_NASC <- function(projectPath,doc=NULL){
   #Loop through all NASC functions
   for(bp in baseline_processes[baseline_processes$functionOutputDataType=='NASCData',]$processName){
     data <- baseline[names(baseline)%in% bp][[1]]
-    # data <- plyr::join(data[[1]]$Data,data[[1]]$Resolution)
-    # data <- data[!is.na(data$PSU),]
-    data <- aggregate(list(NASC=data$NASC),by=list(Longitude=data$Longitude,Latitude=data$Latitude,Cruise=data$Cruise),FUN=sum,na.rm=T)
+    
+    #Get track info
+    track <- data
+    track$Cruise<-NULL
+    track$AcousticCategory<-NULL
+    track$NASC<-NULL
+    
+    
+    data <- aggregate(list(NASC=data$NASC),by=list(Longitude=data$Longitude,Latitude=data$Latitude,Cruise=data$Cruise,
+                                                        AcousticCategory=data$AcousticCategory),FUN=sum,na.rm=T)
     
     data$NASC_rel <- data$NASC/max(data$NASC,na.rm = T)
     #Display map
@@ -231,7 +238,7 @@ plot_NASC <- function(projectPath,doc=NULL){
       geom_spoke(data=data,aes(x=Longitude,y=Latitude,radius=NASC_rel*3,group=NULL),
                  arrow = arrow(length = unit(0.0, "cm")), angle=pi/2,colour='blue')+ 
       theme(panel.background = element_blank())+
-      xlab('Longitude')+ylab('Latitude')
+      xlab('Longitude')+ylab('Latitude')+facet_wrap(~AcousticCategory)
                       
 
     
