@@ -186,6 +186,75 @@ plot_BeamKey <- function(projectPath,doc){
 
 
 
+
+
+
+#' plot_StationLink
+#'
+#' This function reads the stox project and grap the MeanNASCdata object
+#' A figure is then made to view the mean NASC values
+#'
+#' @param projectPath Path to the stox project
+#' @param doc a doc object to store figures to word document
+#' @return A ggplot figure
+#' @export
+#' @import ggplot2
+#' @import plyr
+#' @import viridis
+plot_StationLink <- function(projectPath,doc=NULL){
+  baseline <- RstoxFramework::getModelData(projectPath, modelName = 'baseline')
+  baseline_processes<- RstoxFramework::getProcessTable(projectPath,modelName = 'baseline')
+  
+  
+  #Path to where the stratum polygon is
+  geojsonFilePath<-paste0(projectPath,'/output/baseline/',baseline_processes[baseline_processes$functionOutputDataType=='StratumPolygon',]$processName,'/',
+                          baseline_processes[baseline_processes$functionOutputDataType=='StratumPolygon',]$functionOutputDataType,'.geojson')
+  
+  #get stratum polygon
+  stratum <- getStratumPolygonFromGeojsonfFile(geojsonFilePath)
+  processes <- baseline_processes[baseline_processes$functionName%in%c('RstoxBase::DefineBioticAssignment'),]
+  for(bp in 1:nrow(processes)){
+    
+    proc <- processes[bp,]
+    
+    
+    proc$functionParameters
+    
+    tmp <- join(baseline[baseline_processes$processName==proc$functionInputs[[1]]$AcousticPSU[1]][[1]]$EDSU_PSU,
+                baseline[baseline_processes$processName==proc$functionInputs[[1]]$StoxAcousticData[1]][[1]]$Log)
+    
+    tmp <- join(tmp,baseline[baseline_processes$processID==proc$processID][[1]])
+    
+    
+    test<-c()
+    test$Haul<-unique(tmp$Haul)
+    test$cols = rainbow(length(unique(tmp$Haul)), s=.6, v=.9)[sample(1:length(unique(tmp$Haul)),length(unique(tmp$Haul)))]
+    tmp<-join(tmp,as.data.frame(test))
+    world <- map_data('world')
+    tmp[is.na(tmp$Haul),]$cols<-NA
+    gg_plot <- ggplot()+geom_map(data=world,map=world,
+                                 aes(long, lat, map_id = region))+
+      xlim(min(tmp$Longitude)-1,max(tmp$Longitude)+1)+
+      ylim(min(tmp$Latitude)-1,max(tmp$Latitude)+1)+
+      geom_polygon(data=stratum,aes(x=x,y=y,group=StratumName,map_id=NULL),
+                   colour='black',fill='grey')+
+      geom_point(data=tmp,aes(x=jitter(Longitude),y=jitter(Latitude,factor = 10),colour=cols),size=0.1) +
+      theme(legend.position="none")+ggtitle(proc$processName)
+    
+    
+  
+  if(!is.null(doc)){
+    add.title(doc=doc,my.title = paste0('AutoReport - NASC map - ', bp))
+    officer::body_add_gg(doc, value = gg_plot, style = "centered" )
+    add.page.break(doc = doc)}else{show(gg_plot)}
+  
+}
+return(doc)
+}
+
+
+
+
 #' plot_NASC
 #'
 #' This function reads the stox project and grap the MeanNASCdata object
