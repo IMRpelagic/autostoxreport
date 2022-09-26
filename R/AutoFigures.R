@@ -213,6 +213,7 @@ plot_NASC <- function(projectPath,doc=NULL){
 
   #Loop through all NASC functions
   for(bp in baseline_processes[baseline_processes$functionOutputDataType=='NASCData',]$processName){
+    #grab data
     data <- baseline[names(baseline)%in% bp][[1]]
     
     #Get track info
@@ -234,9 +235,9 @@ plot_NASC <- function(projectPath,doc=NULL){
       ylim(min(data$Latitude)-1,max(data$Latitude)+1)+
       geom_polygon(data=stratum,aes(x=x,y=y,group=StratumName,map_id=NULL),
                    colour='black',fill='grey')+
-      geom_point(data=data,aes(x=Longitude,y=Latitude,group=NULL),colour='black',size=0.01)+
+      geom_point(data=track,aes(x=Longitude,y=Latitude,group=NULL),colour='black',size=0.01)+
       geom_spoke(data=data,aes(x=Longitude,y=Latitude,radius=NASC_rel*3,group=NULL),
-                 arrow = arrow(length = unit(0.0, "cm")), angle=pi/2,colour='blue')+ 
+                 arrow = arrow(length = unit(0.0, "cm")), angle=pi/2,colour='red')+ 
       theme(panel.background = element_blank())+
       xlab('Longitude')+ylab('Latitude')+facet_wrap(~AcousticCategory)
                       
