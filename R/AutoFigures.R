@@ -631,3 +631,57 @@ plot_AgeLength<- function(projectPath,doc){
   
   
 }
+
+
+
+#' plot_showAcoCat
+#'
+#' This function show the acoustic cathegories from different processes
+#'
+#' @param projectPath Path to the stox project
+#' @param doc a doc object to store figures to word document
+#' @return A ggplot figure
+#' @export
+#' @import ggplot2
+#' @import plyr
+#' @import viridis
+plot_showAcoCat <- function(projectPath,doc=NULL){
+  baseline <- RstoxFramework::getModelData(projectPath, modelName = 'baseline')
+  baseline_processes<- RstoxFramework::getProcessTable(projectPath,modelName = 'baseline')
+  
+  
+  #Path to where the stratum polygon is
+  geojsonFilePath<-paste0(projectPath,'/output/baseline/',baseline_processes[baseline_processes$functionOutputDataType=='StratumPolygon',]$processName,'/',
+                          baseline_processes[baseline_processes$functionOutputDataType=='StratumPolygon',]$functionOutputDataType,'.geojson')
+  
+  #get stratum polygon
+  stratum <- getStratumPolygonFromGeojsonfFile(geojsonFilePath)
+  
+  processes <- baseline_processes[baseline_processes$functionOutputDataType%in%c('StoxAcousticData'),]
+  
+  for(bp in 1:nrow(processes)){
+    data <- baseline[baseline_processes$processID==processes[bp,]$processID][[1]]
+    
+    tmp <- join(data$Log,data$AcousticCategory)
+    track <- tmp
+    track$AcousticCategory<-NULL
+    world <- map_data('world')
+    ggplot()+geom_map(data=world,map=world,
+                      aes(long, lat, map_id = region))+
+      xlim(min(tmp$Longitude)-1,max(tmp$Longitude)+1)+
+      ylim(min(tmp$Latitude)-1,max(tmp$Latitude)+1)+
+      geom_polygon(data=stratum,aes(x=x,y=y,group=StratumName,map_id=NULL),
+                   colour='black',fill='grey')+
+      geom_point(data=track,aes(x=Longitude,y=Latitude),colour='black',size=0.01) +
+      geom_point(data=tmp,aes(x=Longitude,y=Latitude,colour=AcousticCategory),size=0.1) +
+      theme(legend.position="none")+facet_wrap(~AcousticCategory)+ggtitle(processes[bp,]$processName)
+    
+    if(!is.null(doc)){
+      add.title(doc=doc,my.title = paste0('AutoReport - NASC map - ', bp))
+      officer::body_add_gg(doc, value = gg_plot, style = "centered" )
+      add.page.break(doc = doc)}else{show(gg_plot)}
+    
+  }
+  return(doc)
+}
+
