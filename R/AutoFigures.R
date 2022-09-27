@@ -244,7 +244,7 @@ plot_StationLink <- function(projectPath,doc=NULL){
     
   
   if(!is.null(doc)){
-    add.title(doc=doc,my.title = paste0('AutoReport - NASC map - ', bp))
+    add.title(doc=doc,my.title = paste0('AutoReport - station link map - '))
     officer::body_add_gg(doc, value = gg_plot, style = "centered" )
     add.page.break(doc = doc)}else{show(gg_plot)}
   
@@ -677,11 +677,74 @@ plot_showAcoCat <- function(projectPath,doc=NULL){
       theme(legend.position="none")+facet_wrap(~AcousticCategory)+ggtitle(processes[bp,]$processName)
     
     if(!is.null(doc)){
-      add.title(doc=doc,my.title = paste0('AutoReport - NASC map - ', bp))
+      add.title(doc=doc,my.title = paste0('AutoReport - AcoCat - '))
       officer::body_add_gg(doc, value = gg_plot, style = "centered" )
       add.page.break(doc = doc)}else{show(gg_plot)}
     
   }
   return(doc)
 }
+
+
+
+
+
+
+#' plot_SampleNumber
+#'
+#' This function show the sample number
+#'
+#' @param projectPath Path to the stox project
+#' @param doc a doc object to store figures to word document
+#' @return A ggplot figure
+#' @export
+#' @import ggplot2
+#' @import plyr
+#' @import viridis
+plot_SampleNumber <- function(projectPath,doc=NULL){
+  
+  baseline <- RstoxFramework::getModelData(projectPath, modelName = 'baseline')
+  baseline_processes<- RstoxFramework::getProcessTable(projectPath,modelName = 'baseline')
+  
+  
+  #Path to where the stratum polygon is
+  geojsonFilePath<-paste0(projectPath,'/output/baseline/',baseline_processes[baseline_processes$functionOutputDataType=='StratumPolygon',]$processName,'/',
+                          baseline_processes[baseline_processes$functionOutputDataType=='StratumPolygon',]$functionOutputDataType,'.geojson')
+  
+  #get stratum polygon
+  stratum <- getStratumPolygonFromGeojsonfFile(geojsonFilePath)
+  
+  processes <- baseline_processes[baseline_processes$functionOutputDataType%in%c('StoxBioticData'),]
+  
+  for(bp in 1:nrow(processes)){
+    
+    
+    data <- join(baseline[baseline_processes$processID== processes[bp,]$processID][[1]]$Sample,
+                 baseline[baseline_processes$processID== processes[bp,]$processID][[1]]$Station)
+    
+    min_Lon <- min(min(stratum$x),min(data$Longitude))
+    max_Lon <- max(max(stratum$x),max(data$Longitude))
+    min_Lat <- min(min(stratum$y),min(data$Latitude))
+    max_Lat <- max(max(stratum$y),max(data$Latitude))
+    
+    world <- map_data('world')
+    gg_plot<-ggplot()+geom_map(data=world,map=world,
+                               aes(long, lat, map_id = region))+
+      xlim(min_Lon-1,max_Lon+1)+
+      ylim(min_Lat-1,max_Lat+1)+
+      geom_polygon(data=stratum,aes(x=x,y=y,group=StratumName,map_id=NULL),
+                   colour='black',fill='grey')+
+      geom_point(data=data,aes(x=Longitude,y=Latitude,size=SampleNumber,colour=SpeciesCategoryKey))+
+      ggtitle(processes[bp,]$processName)
+    
+    
+    if(!is.null(doc)){
+      add.title(doc=doc,my.title = paste0('AutoReport - SampleNumber '))
+      officer::body_add_gg(doc, value = gg_plot, style = "centered" )
+      add.page.break(doc = doc)}else{show(gg_plot)}
+    
+  }
+  return(doc)
+}
+
 
