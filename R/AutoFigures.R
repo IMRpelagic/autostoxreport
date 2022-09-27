@@ -666,7 +666,7 @@ plot_showAcoCat <- function(projectPath,doc=NULL){
     track <- tmp
     track$AcousticCategory<-NULL
     world <- map_data('world')
-    ggplot()+geom_map(data=world,map=world,
+    gg_plot<-ggplot()+geom_map(data=world,map=world,
                       aes(long, lat, map_id = region))+
       xlim(min(tmp$Longitude)-1,max(tmp$Longitude)+1)+
       ylim(min(tmp$Latitude)-1,max(tmp$Latitude)+1)+
