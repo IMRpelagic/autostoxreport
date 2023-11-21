@@ -77,10 +77,10 @@ startup <- function(projectPath){
 #' @return out a data.table object of the stratum definition
 #' @export
 getStratumPolygonFromGeojsonfFile <- function(geojsonFilePath, textFilePath = NULL) {
-geojson_data_sf <- st_read(geojsonFilePath)
+geojson_data_sf <- sf::st_read(geojsonFilePath)
 StratumName<-geojson_data_sf$StratumName
-coordinates <- st_coordinates(geojson_data_sf)
-geojson_data_dt <- data.table(
+coordinates <- sf::st_coordinates(geojson_data_sf)
+geojson_data_dt <- data.table::data.table(
   StratumName = StratumName[coordinates[, 5]],
   Longitude = coordinates[, 1],
   Latitude = coordinates[, 2]
@@ -121,7 +121,7 @@ plot_progression <- function(projectPath,doc){
     data <- baseline[names(baseline)%in% bp]
 
     #Display map
-    gg_plot<-ggplot2::ggplot(data=stratum,ggplot2::aes(x=x,y=y,group=StratumName))+
+    gg_plot<-ggplot2::ggplot(data=stratum,ggplot2::aes(x=Longitude,y=Latitude,group=StratumName))+
       ggplot2::geom_polygon(colour='black',fill='red',alpha=0.4)+
       ggplot2::geom_point(data=data[[1]]$Log,ggplot2::aes(x=Longitude,y=Latitude,colour=DateTime,group=NULL),size=0.1)+
       ggplot2::xlab('Longitude')+ggplot2::ylab('Latitude')+ ggplot2::theme(panel.background = ggplot2::element_blank())+
@@ -171,7 +171,7 @@ plot_BeamKey <- function(projectPath,doc){
     
     tmp<-join(data[[1]]$Log,data[[1]]$Beam)
     #Display map
-    gg_plot<-ggplot2::ggplot(data=stratum,ggplot2::aes(x=x,y=y,group=StratumName))+
+    gg_plot<-ggplot2::ggplot(data=stratum,ggplot2::aes(x=Longitude,y=Latitude,group=StratumName))+
       ggplot2::geom_polygon(colour='black',fill='red',alpha=0.4)+
       ggplot2::geom_point(data=tmp,ggplot2::aes(x=Longitude,y=Latitude,colour=Beam,group=NULL),size=0.1)+
       ggplot2::xlab('Longitude')+ggplot2::ylab('Latitude')+ 
@@ -239,7 +239,7 @@ plot_StationLink <- function(projectPath,doc=NULL){
                                  aes(long, lat, map_id = region))+
       xlim(min(tmp$Longitude)-1,max(tmp$Longitude)+1)+
       ylim(min(tmp$Latitude)-1,max(tmp$Latitude)+1)+
-      geom_polygon(data=stratum,aes(x=x,y=y,group=StratumName,map_id=NULL),
+      geom_polygon(data=stratum,aes(x=Longitude,y=Latitude,group=StratumName,map_id=NULL),
                    colour='black',fill='grey')+
       geom_point(data=tmp,aes(x=jitter(Longitude),y=jitter(Latitude,factor = 10),colour=cols),size=0.1) +
       theme(legend.position="none")+ggtitle(proc$processName)
@@ -305,7 +305,7 @@ plot_NASC <- function(projectPath,doc=NULL){
                       aes(long, lat, map_id = region))+
       xlim(min(data$Longitude)-1,max(data$Longitude)+1)+
       ylim(min(data$Latitude)-1,max(data$Latitude)+1)+
-      geom_polygon(data=stratum,aes(x=x,y=y,group=StratumName,map_id=NULL),
+      geom_polygon(data=stratum,aes(x=Longitude,y=Latitude,group=StratumName,map_id=NULL),
                    colour='black',fill='grey')+
       geom_point(data=track,aes(x=Longitude,y=Latitude,group=NULL),colour='black',size=0.01)+
       geom_spoke(data=data,aes(x=Longitude,y=Latitude,radius=NASC_rel*3,group=NULL),
@@ -370,7 +370,7 @@ plot_Imputed_link <- function(projectPath,doc=NULL){
       }
       
       #Display map
-      gg_plot<-ggplot2::ggplot(data=stratum,ggplot2::aes(x=x,y=y,group=StratumName))+
+      gg_plot<-ggplot2::ggplot(data=stratum,ggplot2::aes(x=Longitude,y=Latitude,group=StratumName))+
         ggplot2::geom_polygon(colour='black',fill='grey',alpha=0.4)+
         ggplot2::geom_point(data=data[[1]],ggplot2::aes(x=Longitude,y=Latitude,colour=ReplaceLevel,group=NULL),size=1)+
         ggplot2::xlab('Longitude')+
