@@ -77,13 +77,16 @@ startup <- function(projectPath){
 #' @return out a data.table object of the stratum definition
 #' @export
 getStratumPolygonFromGeojsonfFile <- function(geojsonFilePath, textFilePath = NULL) {
-  stratumPolygon <- RstoxBase::readGeoJSON(geojsonFilePath)
-  listOfXY <- RstoxBase::getStratumPolygonList(stratumPolygon)
-  listOfXY <-lapply(listOfXY, data.table::setnames, c("V1", "V2"), c("x", "y"))
-  stratumNames <- RstoxBase::getStratumNames(stratumPolygon)
-  names(listOfXY) <- stratumNames
-  out <- data.table::rbindlist(listOfXY, idcol = "StratumName")
-  return(out)
+geojson_data_sf <- st_read(geojsonFilePath)
+StratumName<-geojson_data_sf$StratumName
+coordinates <- st_coordinates(geojson_data_sf)
+geojson_data_dt <- data.table(
+  StratumName = StratumName[coordinates[, 5]],
+  Longitude = coordinates[, 1],
+  Latitude = coordinates[, 2]
+)
+
+  return(geojson_data_dt)
 }
 
 
@@ -351,7 +354,7 @@ plot_Imputed_link <- function(projectPath,doc=NULL){
   for(bp in baseline_processes[baseline_processes$functionOutputDataType=='SuperIndividualsData',]$processName){
     print(bp)
     
-    data <- baseline[names(baseline)%in% bp]
+    data <- sub_data[names(baseline)%in% bp]
     
     if('ReplaceLevel'%in%names(data[[1]])){
       sub_data <- data[[1]]
